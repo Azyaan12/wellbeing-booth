@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wellbeing Photo Booth</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+
+  <!-- 1. Welcome -->
+  <section id="welcome-view">
+    <h1>Wellbeing Photo Booth</h1>
+    <p class="lead">Four small questions, four photos, one photo-booth strip to keep.</p>
+    <ol class="steps">
+      <li><b>Take 4 photos in 10 minutes</b>, one for each question.</li>
+      <li><b>Get your collage</b> and download or share it.</li>
+      <li><b>Visit the stall</b> to collect your reward.</li>
+    </ol>
+    <p class="note">Your photos stay on your phone.</p>
+    <button id="start-btn" class="btn">Start the 10-minute timer</button>
+  </section>
+
+  <!-- 2. Photo questions (reused for all 4) -->
+  <section id="photo-view" hidden>
+    <div id="timer" class="timer">10:00 left</div>
+    <div id="progress" class="progress"></div>
+    <p class="step" id="step-label"></p>
+    <h2 id="question-text"></h2>
+    <div class="photo-box">
+      <img id="preview" alt="Your photo" hidden>
+      <span id="placeholder">Your photo will appear here</span>
+    </div>
+    <label class="btn" for="camera" id="camera-label">Take a photo</label>
+    <input id="camera" class="visually-hidden" type="file" accept="image/*" capture="environment">
+    <div class="row" id="after-photo" hidden>
+      <label class="btn secondary" for="camera">Retake</label>
+      <button id="next-btn" class="btn">Next photo</button>
+    </div>
+  </section>
+
+  <!-- 3. Collage -->
+  <section id="collage-view" hidden>
+    <h2>Your photo booth strip</h2>
+    <canvas id="collage"></canvas>
+    <div class="row">
+      <button id="download-btn" class="btn secondary">Download</button>
+      <button id="share-btn" class="btn secondary">Share</button>
+    </div>
+    <button id="done-btn" class="btn">I'm done</button>
+  </section>
+
+  <!-- 4. Complete -->
+  <section id="done-view" hidden>
+    <div class="big-icon">✓</div>
+    <h1>All done!</h1>
+    <p class="lead">Thank you for taking a moment for yourself today.</p>
+    <div class="reward">
+      <p class="reward-title">Collect your reward</p>
+      <p>Head to the stall and show this screen.</p>
+    </div>
+  </section>
+
+  <!-- 5. Time's up -->
+  <section id="timeup-view" hidden>
+    <h1>Time's up</h1>
+    <p class="lead">The 10 minutes ran out before all 4 photos were taken. That's okay, you can have another go.</p>
+    <button id="retry-btn" class="btn">Try again</button>
+  </section>
+
+</main>
+<script src="app.js"></script>
+</body>
+</html>
