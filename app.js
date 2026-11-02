@@ -8,9 +8,25 @@ const QUESTIONS = [
 ];
 const TIME_LIMIT = 10 * 60 * 1000;   // 10 minutes in milliseconds
 
+// ---------- Messages ----------
+// One is shown under each photo after it's taken (placeholders for now)
+const MESSAGES = [
+  "Small moments of calm add up.",
+  "You showed up for yourself today. That matters.",
+  "Noticing the good is a skill, and you're practising it.",
+  "It's okay to slow down.",
+  "Your feelings are valid, every one of them.",
+  "Rest is productive too.",
+  "You are doing better than you think.",
+  "Be as kind to yourself as you are to others.",
+  "One deep breath can change a moment.",
+  "Little steps still move you forward."
+];
+
 // ---------- App state (also saved on the phone while the timer runs) ----------
 let current = 0;        // which question we're on: 0, 1, 2 or 3
 const photos = [];      // cropped photo for each question
+const messages = [];    // index into MESSAGES shown with each photo
 let collageBlob = null; // finished collage image
 let timerId = null;     // the running countdown
 let endTime = 0;        // when the 10 minutes run out (ms since 1970)
@@ -21,7 +37,7 @@ let collageUrl = null;  // temporary URL for the collage image
 const $ = (id) => document.getElementById(id);
 // Heading shown in the top bar for each screen
 const TITLES = {
-  "welcome-view": "NMHD Digital Hunt",
+  "welcome-view": "Digital Hunt",
   "photo-view":   "Photo 1 of 4",        // updated per question in renderPhotoStep()
   "collage-view": "Your Collage",
   "done-view":    "All Done!",
@@ -74,7 +90,8 @@ async function withStore(mode, fn) {
 }
 
 const saveSession = () =>
-  withStore("readwrite", (s) => s.put({ endTime, current, photos: [...photos] }, "current"));
+  withStore("readwrite", (s) =>
+    s.put({ endTime, current, photos: [...photos], messages: [...messages] }, "current"));
 const loadSession = () => withStore("readonly", (s) => s.get("current"));
 const clearSession = () => withStore("readwrite", (s) => s.delete("current"));
 
@@ -114,6 +131,13 @@ async function cropToSquare(file, size = 1080) {
   canvas.getContext("2d").drawImage(img, sx, sy, side, side, 0, 0, size, size);
   return new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.85));
 }
+
+// Pick a random message not already shown for another photo
+function pickMessage(step) {
+  const used = messages.filter((m, i) => i !== step);
+  const options = MESSAGES.map((_, i) => i).filter((i) => !used.includes(i));
+  return options[Math.floor(Math.random() * options.length)];
+}
 // ---------- Draw the current question ----------
 function renderProgress() {
   $("progress").innerHTML = "";
@@ -137,6 +161,9 @@ function renderPhotoStep() {
 
   $("preview").hidden = !hasPhoto;
   $("placeholder").hidden = hasPhoto;
+  $("photo-message").textContent = hasPhoto ? MESSAGES[messages[current]] ?? "" : "";
+  $("photo-message").hidden = !hasPhoto;
+  $("photo-view").classList.toggle("has-photo", hasPhoto);
   $("camera-label").hidden = hasPhoto;   // "Take a photo" before
   $("after-photo").hidden = !hasPhoto;   // "Retake / Next" after
   $("next-btn").disabled = false;
@@ -147,6 +174,7 @@ function renderPhotoStep() {
 $("start-btn").addEventListener("click", () => {
   current = 0;
   photos.length = 0;        // clear any earlier attempt
+  messages.length = 0;
   collageBlob = null;
   endTime = Date.now() + TIME_LIMIT;
   saveSession();
@@ -174,6 +202,7 @@ $("camera").addEventListener("change", async (e) => {
     return;
   }
   photos[step] = photo;
+  messages[step] = pickMessage(step);      // a new one on retake too
   saveSession();
   renderPhotoStep();
 });
@@ -332,6 +361,8 @@ document.querySelectorAll(".top-bar .logo").forEach((img) => {
   current = saved.current || 0;
   photos.length = 0;
   (saved.photos || []).forEach((p, i) => { if (p) photos[i] = p; });
+  messages.length = 0;
+  (saved.messages || []).forEach((m, i) => { messages[i] = m; });
   showView("photo-view");
   renderPhotoStep();
   startTimer();

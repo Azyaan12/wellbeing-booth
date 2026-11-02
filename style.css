@@ -113,6 +113,19 @@ h2 { font-size: 1.15rem; line-height: 1.3; margin: 10px 4px 12px; }
 }
 #preview { width: 100%; height: 100%; object-fit: cover; }
 
+/* message under the photo; the box shrinks a little to make room */
+.has-photo .photo-box {
+  width: min(100%, calc(100vh - 380px));
+  width: min(100%, calc(100dvh - 380px));
+}
+.message {
+  margin: 12px 8px 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--accent-dark);
+}
+
 /* ---------- collage ---------- */
 #collage-img {
   display: block;
