@@ -2,18 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Wellbeing Photo Booth</title>
-  <link rel="icon" href="data:,">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>NMHD Digital Hunt</title>
+  <meta name="apple-mobile-web-app-title" content="NMHD Digital Hunt">
+  <meta name="application-name" content="NMHD Digital Hunt">
+  <meta property="og:title" content="NMHD Digital Hunt">
+  <meta property="og:description" content="Four questions, four photos, one collage to keep.">
+  <meta name="theme-color" content="#f4f1ec">
+  <link rel="icon" href="images/icon.png">
+  <link rel="apple-touch-icon" href="images/icon.png">
   <link rel="stylesheet" href="style.css">
-  <p class="version">v0.1</p>
 </head>
 <body>
 <main>
 
+  <!-- Header on every page: NMHD logo | page heading | Health Expo logo -->
+  <header class="top-bar">
+    <img class="logo" src="images/nmhd-logo.png" alt="NMHD logo" onerror="this.style.visibility='hidden'">
+    <h1 id="page-title">NMHD Digital Hunt</h1>
+    <img class="logo" src="images/health-expo-logo.png" alt="Health Expo logo" onerror="this.style.visibility='hidden'">
+  </header>
+
   <!-- 1. Welcome -->
   <section id="welcome-view">
-    <h1>NMHD DIGITAL HUNT</h1>
     <p class="lead">Four small questions, four photos, one photo-booth strip to keep.</p>
     <ol class="steps">
       <li><b>Take 4 photos in 10 minutes, one for each question.</b></li>
@@ -26,9 +37,10 @@
 
   <!-- 2. Photo questions (reused for all 4) -->
   <section id="photo-view" hidden>
-    <div id="timer" class="timer">10:00 left</div>
-    <div id="progress" class="progress"></div>
-    <p class="step" id="step-label"></p>
+    <div class="status-row">
+      <div id="progress" class="progress"></div>
+      <div id="timer" class="timer">10:00 left</div>
+    </div>
     <h2 id="question-text"></h2>
     <div class="photo-box">
       <img id="preview" alt="Your photo" hidden>
@@ -44,7 +56,6 @@
 
   <!-- 3. Collage -->
   <section id="collage-view" hidden>
-    <h2>Your photo booth strip</h2>
     <canvas id="collage"></canvas>
     <div class="row">
       <button id="download-btn" class="btn secondary">Download</button>
@@ -56,7 +67,6 @@
   <!-- 4. Complete -->
   <section id="done-view" hidden>
     <div class="big-icon">✓</div>
-    <h1>All done!</h1>
     <p class="lead">Thank you for taking a moment for yourself today.</p>
     <div class="reward">
       <p class="reward-title">Collect your reward</p>
@@ -66,11 +76,11 @@
 
   <!-- 5. Time's up -->
   <section id="timeup-view" hidden>
-    <h1>Time's up</h1>
     <p class="lead">The 10 minutes ran out before all 4 photos were taken. That's okay, you can have another go.</p>
     <button id="retry-btn" class="btn">Try again</button>
   </section>
 
+  <p class="version">v0.2</p>
 </main>
 <script src="app.js"></script>
 </body>

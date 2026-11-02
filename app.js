@@ -17,11 +17,30 @@ let previewUrl = null;  // temporary URL for the preview image
 
 // ---------- Helpers ----------
 const $ = (id) => document.getElementById(id);
-const VIEWS = ["welcome-view", "photo-view", "collage-view", "done-view", "timeup-view"];
+// Heading shown in the top bar for each screen
+const TITLES = {
+  "welcome-view": "NMHD Digital Hunt",
+  "photo-view":   "Photo 1 of 4",        // updated per question in renderPhotoStep()
+  "collage-view": "Your Collage",
+  "done-view":    "All Done!",
+  "timeup-view":  "Time's Up"
+};
+const VIEWS = Object.keys(TITLES);
 
 function showView(id) {
   VIEWS.forEach((v) => { $(v).hidden = (v !== id); });
+  $("page-title").textContent = TITLES[id];
   window.scrollTo(0, 0);
+}
+
+// Load an image file for drawing on the collage (null if it's missing)
+function loadImage(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
 }
 // ---------- 10-minute timer ----------
 function startTimer() {
@@ -73,7 +92,7 @@ function renderProgress() {
 
 function renderPhotoStep() {
   const hasPhoto = !!photos[current];
-  $("step-label").textContent = `Photo ${current + 1} of ${QUESTIONS.length}`;
+  $("page-title").textContent = `Photo ${current + 1} of ${QUESTIONS.length}`;
   $("question-text").textContent = QUESTIONS[current].text;
   renderProgress();
 
@@ -125,9 +144,9 @@ async function finishPhotos() {
 }
 // ---------- Build the 2x2 photo booth collage ----------
 async function buildCollage() {
-  const pad = 60, gap = 30, cell = 1000, footer = 160;
-  const W = pad * 2 + cell * 2 + gap;        // 2150
-  const H = pad + cell * 2 + gap + footer;   // 2250
+  const pad = 40, gap = 30, cell = 1000, footer = 280;
+  const W = pad * 2 + cell * 2 + gap;        // 2110
+  const H = pad + cell * 2 + gap + footer;   // 2350
 
   const canvas = $("collage");
   canvas.width = W;
@@ -152,17 +171,40 @@ async function buildCollage() {
     ctx.fillText(QUESTIONS[i].label, x + cell / 2, y + cell - 40);
   }
 
-  ctx.fillStyle = "#333333";                 // title strip
+  // ----- footer: NMHD logo | text | Health Expo logo -----
+  const footerTop = pad + cell * 2 + gap;    // where the photos end
+  const logoBoxW = 420, logoBoxH = 200;      // each logo fits inside this box
+  const logoY = footerTop + (footer - logoBoxH) / 2;
+
+  const [nmhdLogo, expoLogo] = await Promise.all([
+    loadImage("images/nmhd-logo.png"),
+    loadImage("images/health-expo-logo.png")
+  ]);
+  drawLogo(ctx, nmhdLogo, pad, logoY, logoBoxW, logoBoxH, "left");
+  drawLogo(ctx, expoLogo, W - pad - logoBoxW, logoY, logoBoxW, logoBoxH, "right");
+
+  ctx.fillStyle = "#333333";                 // text in the middle
   ctx.textAlign = "center";
-  ctx.font = "bold 56px system-ui, sans-serif";
-  ctx.fillText("A healthy mind is a happy investment", W / 2, H - 85);
-  ctx.font = "36px system-ui, sans-serif";
-  ctx.fillText(new Date().toLocaleDateString(), W / 2, H - 35);
+  ctx.font = "bold 52px system-ui, sans-serif";
+  ctx.fillText("A healthy mind is a", W / 2, footerTop + 115);
+  ctx.fillText("happy investment", W / 2, footerTop + 178);
+  ctx.font = "34px system-ui, sans-serif";
+  ctx.fillText(new Date().toLocaleDateString(), W / 2, footerTop + 238);
 
   collageBlob = await new Promise((r) => canvas.toBlob(r, "image/jpeg", 0.92));
 }
+
+// Draw a logo inside a box, keeping its shape (no stretching)
+function drawLogo(ctx, img, x, y, boxW, boxH, align) {
+  if (!img) return;                          // logo file missing: skip it
+  const scale = Math.min(boxW / img.width, boxH / img.height);
+  const w = img.width * scale;
+  const h = img.height * scale;
+  const dx = align === "left" ? x : x + boxW - w;
+  ctx.drawImage(img, dx, y + (boxH - h) / 2, w, h);
+}
 // ---------- Download, share, done ----------
-const FILE_NAME = "my-wellbeing-booth.jpg";
+const FILE_NAME = "nmhd-digital-hunt.jpg";
 
 function downloadBlob(blob) {
   const url = URL.createObjectURL(blob);
@@ -183,7 +225,7 @@ $("share-btn").addEventListener("click", async () => {
 
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: "A healthy mind is a happy investment" });
+      await navigator.share({ files: [file], title: "NMHD Digital Hunt" });
     } catch (err) {
       if (err.name !== "AbortError") downloadBlob(collageBlob); // AbortError = user closed the sheet
     }
