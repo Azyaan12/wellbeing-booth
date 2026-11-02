@@ -155,7 +155,7 @@ async function buildCollage() {
   ctx.fillStyle = "#333333";                 // title strip
   ctx.textAlign = "center";
   ctx.font = "bold 56px system-ui, sans-serif";
-  ctx.fillText("My Wellbeing Booth", W / 2, H - 85);
+  ctx.fillText("A healthy mind is a happy investment", W / 2, H - 85);
   ctx.font = "36px system-ui, sans-serif";
   ctx.fillText(new Date().toLocaleDateString(), W / 2, H - 35);
 
@@ -183,7 +183,7 @@ $("share-btn").addEventListener("click", async () => {
 
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: "My Wellbeing Booth" });
+      await navigator.share({ files: [file], title: "A healthy mind is a happy investment" });
     } catch (err) {
       if (err.name !== "AbortError") downloadBlob(collageBlob); // AbortError = user closed the sheet
     }
