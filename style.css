@@ -144,14 +144,21 @@ h2 { font-size: 1.15rem; line-height: 1.3; margin: 10px 4px 12px; }
 .btn.secondary { background: var(--card); color: var(--accent); border: 2px solid var(--accent); }
 .row { display: flex; justify-content: center; flex-wrap: wrap; }
 
+.note.error { color: #a12b1f; font-weight: 700; }
+
 /* ---------- complete screen ---------- */
-.big-icon {
-  width: 80px; height: 80px; margin: 12px auto 8px; border-radius: 50%;
-  display: grid; place-items: center;
-  background: var(--accent); color: #fff; font-size: 44px; font-weight: 800;
+#done-collage {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 330px);
+  max-height: calc(100dvh - 330px);
+  min-height: 180px;
+  margin: 8px auto 0;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
 }
 .reward {
-  margin-top: 20px; padding: 18px 16px; border-radius: 18px;
+  margin-top: 16px; padding: 14px 16px; border-radius: 18px;
   background: #fff8e1; border: 3px dashed #d9a404;
 }
 .reward p { margin: 0; }

@@ -9,6 +9,7 @@
   <meta property="og:title" content="NMHD Digital Hunt">
   <meta property="og:description" content="Four questions, four photos, one collage to keep.">
   <meta name="theme-color" content="#f4f1ec">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' blob:; script-src 'self'; style-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <link rel="icon" href="images/icon.png">
   <link rel="apple-touch-icon" href="images/icon.png">
   <link rel="stylesheet" href="style.css">
@@ -18,9 +19,9 @@
 
   <!-- Header on every page: NMHD logo | page heading | Health Expo logo -->
   <header class="top-bar">
-    <img class="logo" src="images/nmhd-logo.png" alt="NMHD logo" onerror="this.style.visibility='hidden'">
+    <img class="logo" src="images/nmhd-logo.png" alt="NMHD logo">
     <h1 id="page-title">NMHD Digital Hunt</h1>
-    <img class="logo" src="images/health-expo-logo.png" alt="Health Expo logo" onerror="this.style.visibility='hidden'">
+    <img class="logo" src="images/health-expo-logo.png" alt="Health Expo logo">
   </header>
 
   <!-- 1. Welcome -->
@@ -48,6 +49,7 @@
     </div>
     <label class="btn" for="camera" id="camera-label">Take a photo</label>
     <input id="camera" class="visually-hidden" type="file" accept="image/*" capture="environment">
+    <p id="photo-error" class="note error" hidden>That photo couldn't be opened. Please try again.</p>
     <div class="row" id="after-photo" hidden>
       <label class="btn secondary" for="camera">Retake</label>
       <button id="next-btn" class="btn">Next photo</button>
@@ -66,8 +68,8 @@
 
   <!-- 4. Complete -->
   <section id="done-view" hidden>
-    <div class="big-icon">✓</div>
     <p class="lead">Thank you for taking a moment for yourself today.</p>
+    <img id="done-collage" alt="Your collage">
     <div class="reward">
       <p class="reward-title">Collect your reward</p>
       <p>Head to the stall and show this screen.</p>
@@ -80,7 +82,7 @@
     <button id="retry-btn" class="btn">Try again</button>
   </section>
 
-  <p class="version">v0.2</p>
+  <p class="version">v0.3</p>
 </main>
 <script src="app.js"></script>
 </body>

@@ -8,12 +8,14 @@ const QUESTIONS = [
 ];
 const TIME_LIMIT = 10 * 60 * 1000;   // 10 minutes in milliseconds
 
-// ---------- App state (lives in memory while the page is open) ----------
+// ---------- App state (also saved on the phone while the timer runs) ----------
 let current = 0;        // which question we're on: 0, 1, 2 or 3
 const photos = [];      // cropped photo for each question
 let collageBlob = null; // finished collage image
 let timerId = null;     // the running countdown
+let endTime = 0;        // when the 10 minutes run out (ms since 1970)
 let previewUrl = null;  // temporary URL for the preview image
+let collageUrl = null;  // temporary URL for the collage on the done page
 
 // ---------- Helpers ----------
 const $ = (id) => document.getElementById(id);
@@ -42,10 +44,42 @@ function loadImage(src) {
     img.src = src;
   });
 }
+// ---------- Save progress on the phone (IndexedDB) ----------
+// Keeps the timer and photos if the page reloads or the browser is closed,
+// but only until the 10 minutes run out. Nothing is ever uploaded.
+const DB_NAME = "nmhd-digital-hunt";
+const STORE = "session";
+
+function openDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+// Run one request against the store; failures are ignored (private mode etc.)
+async function withStore(mode, fn) {
+  try {
+    const db = await openDb();
+    return await new Promise((resolve, reject) => {
+      const req = fn(db.transaction(STORE, mode).objectStore(STORE));
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  } catch {
+    return null;
+  }
+}
+
+const saveSession = () =>
+  withStore("readwrite", (s) => s.put({ endTime, current, photos: [...photos] }, "current"));
+const loadSession = () => withStore("readonly", (s) => s.get("current"));
+const clearSession = () => withStore("readwrite", (s) => s.delete("current"));
+
 // ---------- 10-minute timer ----------
 function startTimer() {
-  const endTime = Date.now() + TIME_LIMIT;
-
   const tick = () => {
     const left = Math.max(0, endTime - Date.now());
     const m = Math.floor(left / 60000);
@@ -55,11 +89,12 @@ function startTimer() {
 
     if (left === 0) {
       stopTimer();
+      clearSession();
       showView("timeup-view");
     }
   };
 
-  tick();                         // show 10:00 straight away
+  tick();                         // show the time left straight away
   timerId = setInterval(tick, 1000);
 }
 
@@ -104,6 +139,7 @@ function renderPhotoStep() {
   $("placeholder").hidden = hasPhoto;
   $("camera-label").hidden = hasPhoto;   // "Take a photo" before
   $("after-photo").hidden = !hasPhoto;   // "Retake / Next" after
+  $("next-btn").disabled = false;
   $("next-btn").textContent =
     current === QUESTIONS.length - 1 ? "Make my collage" : "Next photo";
 }
@@ -112,6 +148,8 @@ $("start-btn").addEventListener("click", () => {
   current = 0;
   photos.length = 0;        // clear any earlier attempt
   collageBlob = null;
+  endTime = Date.now() + TIME_LIMIT;
+  saveSession();
   showView("photo-view");
   renderPhotoStep();
   startTimer();
@@ -119,15 +157,32 @@ $("start-btn").addEventListener("click", () => {
 
 $("camera").addEventListener("change", async (e) => {
   const file = e.target.files[0];
-  if (!file) return;                       // user cancelled the camera
-  photos[current] = await cropToSquare(file);
   e.target.value = "";                     // lets Retake pick a new photo
+  if (!file) return;                       // user cancelled the camera
+  $("photo-error").hidden = true;
+  const step = current;                    // in case Next is tapped while processing
+
+  let photo;
+  try {
+    photo = await cropToSquare(file);
+  } catch {
+    photo = null;
+  }
+  if (!timerId) return;                    // time ran out while processing
+  if (!photo) {
+    $("photo-error").hidden = false;
+    return;
+  }
+  photos[step] = photo;
+  saveSession();
   renderPhotoStep();
 });
 
 $("next-btn").addEventListener("click", () => {
+  $("photo-error").hidden = true;
   if (current < QUESTIONS.length - 1) {
     current++;
+    saveSession();
     renderPhotoStep();
   } else {
     finishPhotos();
@@ -138,8 +193,10 @@ $("retry-btn").addEventListener("click", () => showView("welcome-view"));
 
 async function finishPhotos() {
   stopTimer();                             // all 4 done in time
+  $("next-btn").disabled = true;           // ignore double taps
   $("next-btn").textContent = "Building...";
   await buildCollage();
+  clearSession();
   showView("collage-view");
 }
 // ---------- Build the 2x2 photo booth collage ----------
@@ -234,4 +291,33 @@ $("share-btn").addEventListener("click", async () => {
   }
 });
 
-$("done-btn").addEventListener("click", () => showView("done-view"));
+$("done-btn").addEventListener("click", () => {
+  if (collageUrl) URL.revokeObjectURL(collageUrl);
+  collageUrl = URL.createObjectURL(collageBlob);
+  $("done-collage").src = collageUrl;
+  showView("done-view");
+});
+
+// ---------- Logos: hide if the file is missing ----------
+document.querySelectorAll(".top-bar .logo").forEach((img) => {
+  img.addEventListener("error", () => { img.style.visibility = "hidden"; });
+  if (img.complete && img.naturalWidth === 0) img.style.visibility = "hidden";
+});
+
+// ---------- Pick up where we left off after a reload ----------
+(async () => {
+  const saved = await loadSession();
+  if (!saved || !saved.endTime) return;   // nothing saved: stay on welcome
+  if (saved.endTime <= Date.now()) {      // ran out while the page was closed
+    clearSession();
+    showView("timeup-view");
+    return;
+  }
+  endTime = saved.endTime;
+  current = saved.current || 0;
+  photos.length = 0;
+  (saved.photos || []).forEach((p, i) => { if (p) photos[i] = p; });
+  showView("photo-view");
+  renderPhotoStep();
+  startTimer();
+})();
