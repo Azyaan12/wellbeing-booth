@@ -114,8 +114,9 @@ h2 { font-size: 1.15rem; line-height: 1.3; margin: 10px 4px 12px; }
 #preview { width: 100%; height: 100%; object-fit: cover; }
 
 /* ---------- collage ---------- */
-#collage {
+#collage-img {
   display: block;
+  -webkit-touch-callout: default;   /* keep iPhone's "Save to Photos" menu */
   max-width: 100%;
   max-height: calc(100vh - 250px);
   max-height: calc(100dvh - 250px);

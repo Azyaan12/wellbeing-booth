@@ -15,7 +15,7 @@ let collageBlob = null; // finished collage image
 let timerId = null;     // the running countdown
 let endTime = 0;        // when the 10 minutes run out (ms since 1970)
 let previewUrl = null;  // temporary URL for the preview image
-let collageUrl = null;  // temporary URL for the collage on the done page
+let collageUrl = null;  // temporary URL for the collage image
 
 // ---------- Helpers ----------
 const $ = (id) => document.getElementById(id);
@@ -197,6 +197,12 @@ async function finishPhotos() {
   $("next-btn").textContent = "Building...";
   await buildCollage();
   clearSession();
+
+  // Show the collage as an <img> so it can be pressed and held to save
+  if (collageUrl) URL.revokeObjectURL(collageUrl);
+  collageUrl = URL.createObjectURL(collageBlob);
+  $("collage-img").src = collageUrl;
+  $("done-collage").src = collageUrl;
   showView("collage-view");
 }
 // ---------- Build the 2x2 photo booth collage ----------
@@ -272,31 +278,40 @@ function downloadBlob(blob) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-$("download-btn").addEventListener("click", () => {
-  if (collageBlob) downloadBlob(collageBlob);
-});
-
-$("share-btn").addEventListener("click", async () => {
-  if (!collageBlob) return;
-  const file = new File([collageBlob], FILE_NAME, { type: "image/jpeg" });
+// Open the phone's share sheet; falls back to a normal download
+async function shareBlob(blob) {
+  const file = new File([blob], FILE_NAME, { type: "image/jpeg" });
 
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: "NMHD Digital Hunt" });
     } catch (err) {
-      if (err.name !== "AbortError") downloadBlob(collageBlob); // AbortError = user closed the sheet
+      if (err.name !== "AbortError") downloadBlob(blob); // AbortError = user closed the sheet
     }
   } else {
-    downloadBlob(collageBlob);
+    downloadBlob(blob);
   }
+}
+
+// iPhone/iPad (iPadOS reports itself as a Mac with a touch screen)
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+// Websites can't write to the gallery directly, so pick the closest route:
+// on iPhone a download lands in Files, but the share sheet has "Save Image",
+// which goes straight to Photos. On Android, downloads show up in the
+// gallery's Download album.
+$("download-btn").addEventListener("click", () => {
+  if (!collageBlob) return;
+  if (IS_IOS) shareBlob(collageBlob);
+  else downloadBlob(collageBlob);
 });
 
-$("done-btn").addEventListener("click", () => {
-  if (collageUrl) URL.revokeObjectURL(collageUrl);
-  collageUrl = URL.createObjectURL(collageBlob);
-  $("done-collage").src = collageUrl;
-  showView("done-view");
+$("share-btn").addEventListener("click", () => {
+  if (collageBlob) shareBlob(collageBlob);
 });
+
+$("done-btn").addEventListener("click", () => showView("done-view"));
 
 // ---------- Logos: hide if the file is missing ----------
 document.querySelectorAll(".top-bar .logo").forEach((img) => {
