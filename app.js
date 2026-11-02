@@ -1,32 +1,78 @@
 // ---------- Questions ----------
-// text = shown on screen, label = short caption on the collage
+// text = shown on screen, label = short caption on the collage,
+// messages = one is picked at random and shown under the photo once it's taken
 const QUESTIONS = [
-  { text: "Show something that makes you feel calm.", label: "Calm" },
-  { text: "Show a place where you feel safe.", label: "Safe place" },
-  { text: "Show something you're grateful for.", label: "Grateful" },
-  { text: "Show one small thing you did for yourself today.", label: "Self-care" }
+  {
+    text: "Show something that makes you feel calm.",
+    label: "Calm",
+    messages: [
+      "You deserve peace, not just productivity.",
+      "Take a breath. You don't have to rush through life.",
+      "It's okay to pause. Rest is part of growing.",
+      "Find your calm, and give yourself permission to stay there.",
+      "Even the busiest minds deserve a moment of quiet.",
+      "You don't have to solve everything today.",
+      "Protect your peace. It matters.",
+      "Sometimes, the best thing you can do is slow down.",
+      "A peaceful moment can make a difficult day feel lighter.",
+      "Give yourself the space to breathe, reset and begin again."
+    ]
+  },
+  {
+    text: "Show a place where you feel safe.",
+    label: "Safe place",
+    messages: [
+      "Everyone deserves a place where they can truly be themselves.",
+      "You deserve to feel safe, accepted and valued.",
+      "Home is not always a place; sometimes it's a feeling.",
+      "Surround yourself with people and places that bring you peace.",
+      "You belong wherever you are accepted for who you are.",
+      "Never underestimate the power of feeling understood.",
+      "You deserve spaces where you don't have to pretend.",
+      "It's okay to seek comfort and ask for support.",
+      "May you always find a place where your heart feels at ease.",
+      "Remember, you deserve safety, kindness and belonging."
+    ]
+  },
+  {
+    text: "Show something you're grateful for.",
+    label: "Grateful",
+    messages: [
+      "Happiness often begins with noticing the little things.",
+      "There is beauty in the ordinary moments of life.",
+      "A grateful heart can find light even on cloudy days.",
+      "Don't overlook the little things that make life meaningful.",
+      "Today, celebrate what you have rather than what you lack.",
+      "Sometimes the smallest blessings make the biggest difference.",
+      "There is always something worth appreciating, even in a difficult season.",
+      "Gratitude doesn't mean life is perfect; it means noticing what is good.",
+      "Let the little things remind you that life can be beautiful.",
+      "Take a moment to appreciate how far you've come."
+    ]
+  },
+  {
+    text: "Show one small thing you did for yourself today.",
+    label: "Self-care",
+    messages: [
+      "Taking care of yourself is never a waste of time.",
+      "You deserve the care you so freely give to others.",
+      "Small acts of self-love create meaningful change.",
+      "You are allowed to put yourself first sometimes.",
+      "Every little step towards your well-being counts.",
+      "Be proud of yourself for showing up for YOU today.",
+      "You don't need to earn the right to rest.",
+      "Self-care isn't selfish; it's necessary.",
+      "Treat yourself with the same kindness you would offer a friend.",
+      "Remember, you matter too. Make yourself a priority."
+    ]
+  }
 ];
 const TIME_LIMIT = 10 * 60 * 1000;   // 10 minutes in milliseconds
-
-// ---------- Messages ----------
-// One is shown under each photo after it's taken (placeholders for now)
-const MESSAGES = [
-  "Small moments of calm add up.",
-  "You showed up for yourself today. That matters.",
-  "Noticing the good is a skill, and you're practising it.",
-  "It's okay to slow down.",
-  "Your feelings are valid, every one of them.",
-  "Rest is productive too.",
-  "You are doing better than you think.",
-  "Be as kind to yourself as you are to others.",
-  "One deep breath can change a moment.",
-  "Little steps still move you forward."
-];
 
 // ---------- App state (also saved on the phone while the timer runs) ----------
 let current = 0;        // which question we're on: 0, 1, 2 or 3
 const photos = [];      // cropped photo for each question
-const messages = [];    // index into MESSAGES shown with each photo
+const messages = [];    // which of the question's messages is shown with each photo
 let collageBlob = null; // finished collage image
 let timerId = null;     // the running countdown
 let endTime = 0;        // when the 10 minutes run out (ms since 1970)
@@ -132,10 +178,9 @@ async function cropToSquare(file, size = 1080) {
   return new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.85));
 }
 
-// Pick a random message not already shown for another photo
+// Pick a random message for this question (a different one on retake)
 function pickMessage(step) {
-  const used = messages.filter((m, i) => i !== step);
-  const options = MESSAGES.map((_, i) => i).filter((i) => !used.includes(i));
+  const options = QUESTIONS[step].messages.map((_, i) => i).filter((i) => i !== messages[step]);
   return options[Math.floor(Math.random() * options.length)];
 }
 // ---------- Draw the current question ----------
@@ -161,7 +206,7 @@ function renderPhotoStep() {
 
   $("preview").hidden = !hasPhoto;
   $("placeholder").hidden = hasPhoto;
-  $("photo-message").textContent = hasPhoto ? MESSAGES[messages[current]] ?? "" : "";
+  $("photo-message").textContent = hasPhoto ? QUESTIONS[current].messages[messages[current]] ?? "" : "";
   $("photo-message").hidden = !hasPhoto;
   $("photo-view").classList.toggle("has-photo", hasPhoto);
   $("camera-label").hidden = hasPhoto;   // "Take a photo" before
@@ -219,6 +264,18 @@ $("next-btn").addEventListener("click", () => {
 });
 
 $("retry-btn").addEventListener("click", () => showView("welcome-view"));
+
+// Throw away this attempt and go back to the welcome page
+$("restart-btn").addEventListener("click", () => {
+  if (!confirm("Start over? Your photos so far will be cleared.")) return;
+  stopTimer();
+  clearSession();
+  current = 0;
+  photos.length = 0;
+  messages.length = 0;
+  $("photo-error").hidden = true;
+  showView("welcome-view");
+});
 
 async function finishPhotos() {
   stopTimer();                             // all 4 done in time
