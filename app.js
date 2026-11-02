@@ -209,7 +209,7 @@ function renderPhotoStep() {
   $("photo-message").textContent = hasPhoto ? QUESTIONS[current].messages[messages[current]] ?? "" : "";
   $("photo-message").hidden = !hasPhoto;
   $("photo-view").classList.toggle("has-photo", hasPhoto);
-  $("camera-label").hidden = hasPhoto;   // "Take a photo" before
+  $("before-photo").hidden = hasPhoto;   // "Take / Choose" before
   $("after-photo").hidden = !hasPhoto;   // "Retake / Next" after
   $("next-btn").disabled = false;
   $("next-btn").textContent =
@@ -228,10 +228,11 @@ $("start-btn").addEventListener("click", () => {
   startTimer();
 });
 
-$("camera").addEventListener("change", async (e) => {
+// Same handling whether the photo comes from the camera or the gallery
+async function onPhotoPicked(e) {
   const file = e.target.files[0];
   e.target.value = "";                     // lets Retake pick a new photo
-  if (!file) return;                       // user cancelled the camera
+  if (!file) return;                       // user cancelled the picker
   $("photo-error").hidden = true;
   const step = current;                    // in case Next is tapped while processing
 
@@ -250,7 +251,9 @@ $("camera").addEventListener("change", async (e) => {
   messages[step] = pickMessage(step);      // a new one on retake too
   saveSession();
   renderPhotoStep();
-});
+}
+$("camera").addEventListener("change", onPhotoPicked);
+$("gallery").addEventListener("change", onPhotoPicked);
 
 $("next-btn").addEventListener("click", () => {
   $("photo-error").hidden = true;

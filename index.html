@@ -51,8 +51,12 @@
       <span id="placeholder">Your photo will appear here</span>
     </div>
     <p id="photo-message" class="message" hidden></p>
-    <label class="btn" for="camera" id="camera-label">Take a photo</label>
+    <div class="row" id="before-photo">
+      <label class="btn" for="camera">Take a photo</label>
+      <label class="btn secondary" for="gallery">Choose photo</label>
+    </div>
     <input id="camera" class="visually-hidden" type="file" accept="image/*" capture="environment">
+    <input id="gallery" class="visually-hidden" type="file" accept="image/*">
     <p id="photo-error" class="note error" hidden>That photo couldn't be opened. Please try again.</p>
     <div class="row" id="after-photo" hidden>
       <label class="btn secondary" for="camera">Retake</label>
