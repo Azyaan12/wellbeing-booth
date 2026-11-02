@@ -1,5 +1,5 @@
 import qrcode
 
-URL = "https://azyaan12.github.io/wellbeing-booth/"
+URL = "https://digital-hunt.nmhd-expo.workers.dev/"
 qrcode.make(URL).save("booth_qr.png")
 print("Saved booth_qr.png ->", URL)
