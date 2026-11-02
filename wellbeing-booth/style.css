@@ -1,0 +1,123 @@
+[hidden] { display: none !important; }
+
+:root {
+  --bg: #f4f1ec;
+  --card: #ffffff;
+  --text: #2f2f2f;
+  --muted: #6b6b6b;
+  --accent: #4f7d6b;       /* calm green */
+  --accent-dark: #3b5f51;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 28px 16px 48px;
+  text-align: center;
+}
+
+h1 { font-size: 1.7rem; margin: 12px 0 8px; }
+h2 { font-size: 1.35rem; margin: 6px 8px 20px; }
+.lead { font-size: 1.05rem; color: #4a4a4a; }
+.step { color: var(--muted); margin: 18px 0 0; }
+.note { color: var(--muted); font-size: 0.9rem; }
+
+/* welcome steps */
+.steps { text-align: left; padding: 0; list-style: none; counter-reset: s; }
+.steps li {
+  counter-increment: s;
+  display: flex; gap: 14px; align-items: center;
+  background: var(--card); border-radius: 16px;
+  padding: 14px 16px; margin: 12px 0;
+}
+.steps li::before {
+  content: counter(s);
+  flex: none; width: 40px; height: 40px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent); color: #fff; font-weight: 800;
+}
+
+/* timer pill */
+.timer {
+  display: inline-block;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--card);
+  font-weight: 800;
+}
+.timer.hurry { background: #ffe9d6; color: #8a3d0c; }
+
+/* progress dots */
+.progress { display: flex; justify-content: center; gap: 10px; margin: 14px 0; }
+.dot {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: #d6d2cb; font-weight: 800;
+}
+.dot.done { background: var(--accent); color: #fff; }
+.dot.current { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* photo box + collage */
+.photo-box {
+  aspect-ratio: 1;
+  border-radius: 20px;
+  border: 3px dashed #c7c1b7;
+  background: #fbf9f6;
+  display: grid; place-items: center;
+  overflow: hidden;
+  color: var(--muted);
+}
+#preview { width: 100%; height: 100%; object-fit: cover; }
+#collage {
+  width: 100%; height: auto;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+/* buttons */
+.btn {
+  display: inline-block;
+  min-width: 150px;
+  padding: 15px 26px;
+  margin: 16px 6px 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.btn:active { background: var(--accent-dark); }
+.btn.secondary { background: var(--card); color: var(--accent); border: 2px solid var(--accent); }
+.row { display: flex; justify-content: center; flex-wrap: wrap; }
+
+/* complete screen */
+.big-icon {
+  width: 96px; height: 96px; margin: 24px auto 0; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent); color: #fff; font-size: 52px; font-weight: 800;
+}
+.reward {
+  margin-top: 28px; padding: 22px 18px; border-radius: 18px;
+  background: #fff8e1; border: 3px dashed #d9a404;
+}
+.reward-title { font-size: 1.3rem; font-weight: 800; margin: 0 0 4px; }
+
+/* hides the file input but keeps it clickable via its label */
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
