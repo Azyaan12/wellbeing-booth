@@ -8,7 +8,7 @@
   --accent: #4f7d6b;       /* calm green */
   --accent-dark: #3b5f51;
 }
-
+.version { color: #6b6b6b; font-size: 0.75rem; margin-top: 32px; }
 * { box-sizing: border-box; }
 
 body {
